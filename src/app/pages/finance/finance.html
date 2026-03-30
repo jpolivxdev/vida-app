@@ -1,0 +1,73 @@
+<div class="page">
+
+  <h2>Financeiro 💰</h2>
+
+  <!-- saldo -->
+  <div class="balance">
+    Saldo: R$ {{ getBalance() }}
+  </div>
+
+  <!-- mês -->
+  <div class="balance">
+    Mês atual: R$ {{ getMonthlySummary() }}
+  </div>
+
+  <!-- 🧠 insight -->
+  <div class="insight">
+    {{ getInsights() }}
+  </div>
+<div class="insight secondary">
+  {{ getWeeklyComparison() }}
+</div>
+
+  <!-- 📊 gráfico -->
+  <canvas id="financeChart"></canvas>
+
+  <!-- 📝 formulário -->
+  <div class="form">
+    <input [(ngModel)]="description" placeholder="Descrição" />
+
+    <input [(ngModel)]="amount" type="number" placeholder="Valor" />
+
+    <select [(ngModel)]="type">
+      <option value="expense">Gasto</option>
+      <option value="income">Entrada</option>
+    </select>
+
+    <select [(ngModel)]="category">
+      <option *ngFor="let c of categories" [value]="c">
+        {{ c }}
+      </option>
+    </select>
+
+    <button (click)="addTransaction()">Adicionar</button>
+  </div>
+
+  <!-- 📅 lista agrupada -->
+  <div *ngFor="let group of getTransactionsByDay() | keyvalue">
+
+    <h3>{{ group.key }}</h3>
+
+    <ul>
+      <li *ngFor="let t of group.value">
+
+        <span>
+          {{ t.description }}
+          <small>({{ t.category }})</small>
+        </span>
+
+        <strong 
+          [class.income]="t.type === 'income'" 
+          [class.expense]="t.type === 'expense'"
+        >
+          R$ {{ t.amount }}
+        </strong>
+
+        <button (click)="deleteTransaction(t)">🗑️</button>
+
+      </li>
+    </ul>
+
+  </div>
+
+</div>

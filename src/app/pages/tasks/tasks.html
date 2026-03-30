@@ -1,0 +1,42 @@
+<div class="page">
+
+  <h2>Tarefas 📋</h2>
+
+  <div class="form">
+    <input [(ngModel)]="taskText" placeholder="Nova tarefa" />
+
+    <input type="date" [(ngModel)]="taskDate" />
+    <input type="time" [(ngModel)]="taskTime" />
+
+    <!-- ⏰ lembrete -->
+    <select [(ngModel)]="reminder">
+      <option [value]="0">Na hora</option>
+      <option [value]="10">10 min antes</option>
+      <option [value]="30">30 min antes</option>
+      <option [value]="60">1 hora antes</option>
+    </select>
+
+    <button (click)="addTask()">Adicionar</button>
+  </div>
+
+  <ul>
+    <li *ngFor="let t of tasks; let i = index">
+
+      <span [class.done]="t.done">
+        {{ t.text }}
+
+        <small *ngIf="t.date">
+          📅 {{ t.date }} ⏰ {{ t.time }}
+          <span *ngIf="t.reminder">🔔 {{ t.reminder }} min antes</span>
+        </small>
+      </span>
+
+      <div>
+        <button (click)="toggleTask(i)">✔</button>
+        <button (click)="deleteTask(i)">🗑️</button>
+      </div>
+
+    </li>
+  </ul>
+
+</div>

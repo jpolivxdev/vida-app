@@ -1,0 +1,31 @@
+.form input {
+  width: 100%;
+  margin-bottom: 8px;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+}
+
+.form button {
+  width: 100%;
+  padding: 10px;
+  border-radius: 10px;
+  background: #ff7aa2;
+  color: white;
+  border: none;
+}
+
+li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f7f7f7;
+  margin: 5px 0;
+  padding: 10px;
+  border-radius: 10px;
+}
+
+.done {
+  text-decoration: line-through;
+  opacity: 0.6;
+}

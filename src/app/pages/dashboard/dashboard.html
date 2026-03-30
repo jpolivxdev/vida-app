@@ -1,0 +1,66 @@
+<div class="page">
+
+  <div class="header">
+    <h2>Olá, {{ name }}</h2>
+    <p>{{ getTaskAlert() }}</p>
+  </div>
+
+  <!-- 💰 saldo -->
+  <div class="card balance" (click)="goTo('/finance')">
+    <h3>Saldo atual →</h3>
+    <p>R$ {{ getBalance() }}</p>
+  </div>
+
+  <!-- 🎯 meta -->
+  <div class="card goal" [class.completed]="completed">
+
+    <h3>🎯 Meta</h3>
+
+    <input [(ngModel)]="goal" type="number" placeholder="Meta" />
+    <input [(ngModel)]="saved" type="number" placeholder="Guardado" />
+
+    <button (click)="saveGoal()">Salvar</button>
+
+    <div class="progress">
+      <div class="progress-bar" [style.width.%]="getProgress()"></div>
+    </div>
+
+    <p>{{ saved }} / {{ goal }}</p>
+
+  </div>
+
+  <!-- 📋 HOJE -->
+  <div class="card tasks" (click)="goTo('/tasks')">
+
+    <h3>Hoje 📋</h3>
+
+    <ul>
+      <li *ngFor="let task of getTodayTasks()">
+        {{ task.text }}
+      </li>
+    </ul>
+
+    <small *ngIf="getTodayTasks().length === 0">
+      Nada hoje 😌
+    </small>
+
+  </div>
+
+  <!-- 📅 PRÓXIMAS -->
+  <div class="card tasks" (click)="goTo('/tasks')">
+
+    <h3>Próximas ⏳</h3>
+
+    <ul>
+      <li *ngFor="let task of getNextTasks()">
+        {{ task.text }} - {{ task.date }}
+      </li>
+    </ul>
+
+    <small *ngIf="getNextTasks().length === 0">
+      Sem próximas tarefas 😌
+    </small>
+
+  </div>
+
+</div>
