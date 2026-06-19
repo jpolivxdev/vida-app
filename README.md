@@ -1,80 +1,99 @@
+<div align="center">
+
 # 💖 Vida App
 
-Aplicação web de gestão pessoal desenvolvida para ajudar no dia a dia — inicialmente criada para minha namorada organizar tarefas, finanças e metas de forma simples e prática.
+### Aplicação de gestão pessoal — tarefas, finanças e metas
+
+[![Angular](https://img.shields.io/badge/Angular-DD0031?style=for-the-badge&logo=angular&logoColor=white)](https://angular.io)
+[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
+[![Vercel](https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://vida-app-2.vercel.app/)
+
+🌐 **[Acessar aplicação](https://vida-app-2.vercel.app/)**
+
+</div>
+
+---
+
+## 📌 Sobre o Projeto
+
+Aplicação web de gestão pessoal desenvolvida para ajudar no dia a dia — organização de tarefas, controle financeiro e metas de forma simples e prática, com foco em **boa experiência de uso**, especialmente em dispositivos móveis.
+
+---
 
 ## 🚀 Funcionalidades
 
-- 📋 **Gestão de tarefas**
-  - Criação de tarefas com data e horário
-  - Lembretes com antecedência (10min, 30min, 1h)
-  - Marcar como concluída
+### 📋 Gestão de Tarefas
+- Criação de tarefas com data e horário
+- Lembretes com antecedência (10min, 30min, 1h)
+- Marcação de tarefas como concluídas
 
-- 💰 **Controle financeiro**
-  - Registro de entradas e gastos
-  - Cálculo automático de saldo
-  - Organização por categorias
-  - Insights de gastos
+### 💰 Controle Financeiro
+- Registro de entradas e gastos
+- Cálculo automático de saldo
+- Organização por categorias
+- Insights de gastos
 
-- 🎯 **Meta de economia**
-  - Definição de meta financeira
-  - Acompanhamento de progresso
-  - Feedback visual ao atingir objetivo
+### 🎯 Meta de Economia
+- Definição de meta financeira
+- Acompanhamento de progresso
+- Feedback visual ao atingir o objetivo
 
-- 📊 **Dashboard inteligente**
-  - Resumo financeiro
-  - Tarefas do dia
-  - Próximas tarefas
-  - Alertas automáticos
+### 📊 Dashboard Inteligente
+- Resumo financeiro
+- Tarefas do dia e próximas tarefas
+- Alertas automáticos
 
-- 🔔 **Notificações**
-  - Lembretes baseados em horário
-  - Avisos antes dos compromissos
-
----
-
-## 🛠️ Tecnologias utilizadas
-
-- Angular
-- TypeScript
-- HTML + CSS
-- LocalStorage (persistência de dados)
-- Vercel (deploy)
+### 🔔 Notificações
+- Lembretes baseados em horário
+- Avisos antes dos compromissos
 
 ---
 
-## 🌐 Acesse o projeto
+## 🛠️ Tecnologias Utilizadas
 
-👉 [Acessar aplicação](https://vida-app-2.vercel.app)
+![Angular](https://img.shields.io/badge/Angular-DD0031?style=flat-square&logo=angular&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white)
+![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=flat-square&logo=html5&logoColor=white)
+![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=flat-square&logo=css3&logoColor=white)
+
+> 💾 Persistência de dados via **LocalStorage** — aplicação 100% client-side, sem necessidade de backend.
 
 ---
 
 ## 📦 Como rodar o projeto
 
 ```bash
-# instalar dependências
+# Clone o repositório
+git clone https://github.com/jpolivxdev/vida-app.git
+
+# Instale as dependências
 npm install
 
-# rodar projeto
+# Rode o projeto
 ng serve
+```
 
-Acesse: http://localhost:4200
+Acesse: **http://localhost:4200**
 
-📌 Sobre o projeto
+---
 
-Esse projeto foi desenvolvido com foco em criar uma solução simples, funcional e utilizável no dia a dia, unindo organização pessoal com controle financeiro.
+## 💡 Melhorias Futuras
 
-Além da parte técnica, também foi pensado na experiência do usuário, especialmente para uso em dispositivos móveis.
+- 🔐 Sistema de login por usuário
+- ☁️ Sincronização de dados na nuvem
+- 🔔 Notificações push (app fechado)
+- 📱 Transformar em PWA instalável
+- 📅 Calendário visual completo
 
-💡 Melhorias futuras
-🔐 Sistema de login por usuário
-☁️ Sincronização de dados na nuvem
-🔔 Notificações push (app fechado)
-📱 Transformar em PWA instalável
-📅 Calendário visual completo
-🤝 Contribuição
+---
+
+## 🤝 Contribuição
 
 Sinta-se à vontade para sugerir melhorias ou contribuir com o projeto.
 
-👨‍💻 Autor
+---
 
-Desenvolvido por João Pedro Oliva 🚀
+## 👨‍💻 Autor
+
+**João Pedro Oliva Fogaça**
+[GitHub](https://github.com/jpolivxdev) · [LinkedIn](https://www.linkedin.com/in/joão-pedro-oliva-fogaça-703904258/)
