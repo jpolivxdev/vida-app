@@ -4,24 +4,20 @@
 
   <!-- saldo -->
   <div class="balance">
-    Saldo: R$ {{ getBalance() }}
-  </div>
-
-  <!-- mês -->
-  <div class="balance">
-    Mês atual: R$ {{ getMonthlySummary() }}
+    Saldo: R$ {{ balance() }}
   </div>
 
   <!-- 🧠 insight -->
   <div class="insight">
-    {{ getInsights() }}
+    {{ mainInsight() }}
   </div>
-<div class="insight secondary">
-  {{ getWeeklyComparison() }}
-</div>
+
+  <div class="insight secondary">
+    {{ weeklyComparisonMessage() }}
+  </div>
 
   <!-- 📊 gráfico -->
-  <canvas id="financeChart"></canvas>
+  <canvas #financeChart></canvas>
 
   <!-- 📝 formulário -->
   <div class="form">
@@ -44,7 +40,7 @@
   </div>
 
   <!-- 📅 lista agrupada -->
-  <div *ngFor="let group of getTransactionsByDay() | keyvalue">
+  <div *ngFor="let group of groupedByDay() | keyvalue">
 
     <h3>{{ group.key }}</h3>
 
@@ -56,14 +52,14 @@
           <small>({{ t.category }})</small>
         </span>
 
-        <strong 
-          [class.income]="t.type === 'income'" 
+        <strong
+          [class.income]="t.type === 'income'"
           [class.expense]="t.type === 'expense'"
         >
           R$ {{ t.amount }}
         </strong>
 
-        <button (click)="deleteTransaction(t)">🗑️</button>
+        <button (click)="deleteTransaction(t.id)">🗑️</button>
 
       </li>
     </ul>

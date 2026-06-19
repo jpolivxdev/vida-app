@@ -97,3 +97,62 @@ canvas {
   background: #e7f5ff;
   color: #1c7ed6;
 }
+
+/* cores de entrada/saída na lista de transações */
+.income {
+  color: #28a745;
+}
+
+.expense {
+  color: #e63946;
+}
+
+/* segundo insight (comparação semanal), mais discreto que o principal */
+.insight.secondary {
+  background: #eef2ff;
+  color: #3f51b5;
+  font-weight: 500;
+  margin-top: 8px;
+}
+
+/* lista de transações agrupadas por dia */
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px;
+  border-radius: 10px;
+  background: #f8f9fa;
+  margin-bottom: 6px;
+}
+
+/* formulário de nova transação */
+.form input,
+.form select {
+  width: 100%;
+  margin-bottom: 8px;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+}
+
+.form button {
+  width: 100%;
+  padding: 10px;
+  border: none;
+  border-radius: 10px;
+  background: #ff7aa2;
+  color: white;
+  font-weight: bold;
+}
+
+/* gráfico não pode crescer infinito dentro do card */
+canvas {
+  max-height: 260px;
+  margin: 15px 0;
+}

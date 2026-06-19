@@ -1,7 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, ElementRef, ViewChild, AfterViewInit, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Chart } from 'chart.js/auto';
+import { FinanceService } from './finance.service';
+import { Category, TransactionType } from './transaction.model';
 
 @Component({
   selector: 'app-finance',
@@ -10,245 +12,101 @@ import { Chart } from 'chart.js/auto';
   templateUrl: './finance.html',
   styleUrl: './finance.css'
 })
-export class FinanceComponent {
+export class FinanceComponent implements AfterViewInit {
+
+  // @ViewChild garante que só acessamos o canvas depois que ele
+  // existe de fato no DOM — sem precisar de setTimeout artificial.
+  @ViewChild('financeChart') chartRef!: ElementRef<HTMLCanvasElement>;
 
   description = '';
-  amount: number = 0;
-  type = 'expense';
+  amount: number | null = null;
+  type: TransactionType = 'expense';
+  category: Category = 'Alimentação';
 
-  categories = [
-    'Alimentação',
-    'Transporte',
-    'Lazer',
-    'Compras',
-    'Outros'
+  readonly categories: Category[] = [
+    'Alimentação', 'Transporte', 'Lazer', 'Compras', 'Outros'
   ];
-  category = 'Alimentação';
 
-  transactions: any[] = [];
+  private chart?: Chart;
 
-  chart: any;
-
-  constructor() {
-    this.loadData();
-
-    setTimeout(() => {
-      this.createChart();
-    }, 100);
+  // O constructor precisa vir ANTES das propriedades que usam
+  // "this.finance" — em TS/JS as propriedades de instância são
+  // inicializadas na ordem em que aparecem na classe, então
+  // "this.finance" só existe a partir daqui pra baixo.
+  constructor(private finance: FinanceService) {
+    // Dados e cálculos vêm do service — o componente só "exibe".
   }
 
-  addTransaction() {
-    if (!this.description || !this.amount) return;
+  get transactions() {
+    return this.finance.transactions;
+  }
 
-    this.transactions.push({
+  get balance() {
+    return this.finance.balance;
+  }
+
+  get expensesByCategory() {
+    return this.finance.expensesByCategory;
+  }
+
+  readonly weeklyComparisonMessage = computed(() =>
+    this.finance.getWeeklyComparisonMessage()
+  );
+
+  readonly mainInsight = computed(() => {
+    const byCategory = this.expensesByCategory();
+    if (byCategory.length === 0) return 'Adicione gastos para ver insights 👀';
+
+    const top = byCategory.reduce((max, c) => c.total > max.total ? c : max);
+    return `Você gastou mais com ${top.category} (R$ ${top.total}) 👀`;
+  });
+
+  ngAfterViewInit(): void {
+    this.createChart();
+  }
+
+  addTransaction(): void {
+    if (!this.amount) return;
+
+    this.finance.add({
       description: this.description,
       amount: this.amount,
       type: this.type,
-      category: this.category,
-      date: new Date().toISOString()
+      category: this.category
     });
 
     this.description = '';
-    this.amount = 0;
-
-    this.saveData();
+    this.amount = null;
     this.createChart();
   }
 
-  deleteTransaction(transaction: any) {
-    this.transactions = this.transactions.filter(t => t !== transaction);
-    this.saveData();
+  deleteTransaction(id: string): void {
+    this.finance.delete(id);
     this.createChart();
   }
 
-  getBalance() {
-    return this.transactions.reduce((total, t) => {
-      return t.type === 'income'
-        ? total + t.amount
-        : total - t.amount;
-    }, 0);
+  groupedByDay() {
+    return this.finance.groupByDay();
   }
 
-  getMonthlySummary() {
-    const currentMonth = new Date().getMonth();
-    let total = 0;
+  private createChart(): void {
+    const byCategory = this.expensesByCategory();
 
-    this.transactions.forEach(t => {
-      const date = new Date(t.date);
+    this.chart?.destroy();
 
-      if (date.getMonth() === currentMonth) {
-        total += t.type === 'income' ? t.amount : -t.amount;
-      }
-    });
-
-    return total;
-  }
-
-  getTransactionsByDay() {
-    const groups: any = {};
-
-    this.transactions.forEach(t => {
-      const day = new Date(t.date).toLocaleDateString();
-
-      if (!groups[day]) {
-        groups[day] = [];
-      }
-
-      groups[day].push(t);
-    });
-
-    return groups;
-  }
-
-  // 📊 gráfico
-  createChart() {
-    const categoryTotals: any = {};
-
-    this.transactions.forEach(t => {
-      if (t.type === 'expense') {
-        if (!categoryTotals[t.category]) {
-          categoryTotals[t.category] = 0;
-        }
-        categoryTotals[t.category] += t.amount;
-      }
-    });
-
-    const labels = Object.keys(categoryTotals);
-    const data = Object.values(categoryTotals);
-
-    const colors: any = {
-      'Alimentação': '#ff7aa2',
-      'Transporte': '#4dabf7',
-      'Lazer': '#9775fa',
-      'Compras': '#ffa94d',
-      'Outros': '#adb5bd'
-    };
-
-    const backgroundColors = labels.map((l: string) => colors[l] || '#ccc');
-
-    if (this.chart) {
-      this.chart.destroy();
-    }
-
-    this.chart = new Chart('financeChart', {
+    this.chart = new Chart(this.chartRef.nativeElement, {
       type: 'doughnut',
       data: {
-        labels: labels,
+        labels: byCategory.map(c => c.category),
         datasets: [{
-          data: data,
-          backgroundColor: backgroundColors,
+          data: byCategory.map(c => c.total),
+          backgroundColor: byCategory.map(c => this.finance.getColorFor(c.category)),
           borderRadius: 10
         }]
       },
       options: {
-        plugins: {
-          legend: {
-            position: 'bottom'
-          }
-        }
+        plugins: { legend: { position: 'bottom' } }
       }
     });
-  }
-
-  // 🧠 INSIGHT PRINCIPAL
-  getInsights() {
-    if (this.transactions.length === 0) {
-      return "Adicione gastos para ver insights 👀";
-    }
-
-    const categoryTotals: any = {};
-
-    this.transactions.forEach(t => {
-      if (t.type === 'expense') {
-        if (!categoryTotals[t.category]) {
-          categoryTotals[t.category] = 0;
-        }
-        categoryTotals[t.category] += t.amount;
-      }
-    });
-
-    let highestCategory = '';
-    let highestValue = 0;
-
-    for (let cat in categoryTotals) {
-      if (categoryTotals[cat] > highestValue) {
-        highestValue = categoryTotals[cat];
-        highestCategory = cat;
-      }
-    }
-
-    return `Você gastou mais com ${highestCategory} (R$ ${highestValue}) 👀`;
-  }
-
-  // 📅 GASTO SEMANA ATUAL
-  getCurrentWeekTotal() {
-    const now = new Date();
-    const weekStart = new Date(now.setDate(now.getDate() - now.getDay()));
-
-    let total = 0;
-
-    this.transactions.forEach(t => {
-      const date = new Date(t.date);
-
-      if (date >= weekStart && t.type === 'expense') {
-        total += t.amount;
-      }
-    });
-
-    return total;
-  }
-
-  // 📅 GASTO SEMANA PASSADA
-  getLastWeekTotal() {
-    const now = new Date();
-    const startOfThisWeek = new Date(now.setDate(now.getDate() - now.getDay()));
-    const startOfLastWeek = new Date(startOfThisWeek);
-    startOfLastWeek.setDate(startOfLastWeek.getDate() - 7);
-
-    let total = 0;
-
-    this.transactions.forEach(t => {
-      const date = new Date(t.date);
-
-      if (
-        date >= startOfLastWeek &&
-        date < startOfThisWeek &&
-        t.type === 'expense'
-      ) {
-        total += t.amount;
-      }
-    });
-
-    return total;
-  }
-
-  // 🧠 COMPARAÇÃO SEMANAL
-  getWeeklyComparison() {
-    const current = this.getCurrentWeekTotal();
-    const last = this.getLastWeekTotal();
-
-    if (last === 0) {
-      return "Sem dados da semana passada ainda 📊";
-    }
-
-    if (current > last) {
-      return `Você gastou mais que na semana passada 📈`;
-    } else if (current < last) {
-      return `Você economizou essa semana 👏`;
-    } else {
-      return `Se manteve igual à semana passada 😎`;
-    }
-  }
-
-  // 💾 salvar
-  saveData() {
-    localStorage.setItem('finance', JSON.stringify(this.transactions));
-  }
-
-  loadData() {
-    const data = localStorage.getItem('finance');
-    if (data) {
-      this.transactions = JSON.parse(data);
-    }
   }
 }
