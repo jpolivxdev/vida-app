@@ -1,6 +1,10 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { TaskService } from './task.service';
+import { Task } from './task.model';
+
+type Filter = 'all' | 'today' | 'upcoming';
 
 @Component({
   selector: 'app-tasks',
@@ -11,83 +15,90 @@ import { FormsModule } from '@angular/forms';
 })
 export class TasksComponent {
 
-  taskText = '';
-  taskDate = '';
-  taskTime = '';
-  reminder = 0;
+  filter: Filter = 'all';
+  sheetOpen = false;
 
-  tasks: any[] = [];
+  newText = '';
+  newDate = this.today();
+  newTime = '';
 
-  constructor() {
-    this.loadTasks();
-    this.requestNotificationPermission();
-  }
+  constructor(private taskService: TaskService) {}
 
-  addTask() {
-    if (!this.taskText) return;
+  get pending(): Task[] {
+    const all = this.taskService.tasks().filter(t => !t.done);
+    const today = this.today();
 
-    const task = {
-      text: this.taskText,
-      date: this.taskDate,
-      time: this.taskTime,
-      reminder: this.reminder,
-      done: false
-    };
-
-    this.tasks.push(task);
-    this.saveTasks();
-
-    this.scheduleNotification(task);
-
-    this.taskText = '';
-    this.taskDate = '';
-    this.taskTime = '';
-    this.reminder = 0;
-  }
-
-  toggleTask(i: number) {
-    this.tasks[i].done = !this.tasks[i].done;
-    this.saveTasks();
-  }
-
-  deleteTask(i: number) {
-    this.tasks.splice(i, 1);
-    this.saveTasks();
-  }
-
-  saveTasks() {
-    localStorage.setItem('tasks', JSON.stringify(this.tasks));
-  }
-
-  loadTasks() {
-    const data = localStorage.getItem('tasks');
-    if (data) this.tasks = JSON.parse(data);
-  }
-
-  requestNotificationPermission() {
-    if ("Notification" in window) {
-      Notification.requestPermission();
+    if (this.filter === 'today') {
+      return all.filter(t => t.date === today);
     }
+    if (this.filter === 'upcoming') {
+      return all.filter(t => t.date > today);
+    }
+    return all;
   }
 
-  scheduleNotification(task: any) {
-    if (!task.date || !task.time) return;
+  get completed(): Task[] {
+    return this.taskService.tasks().filter(t => t.done);
+  }
 
-    const taskDateTime = new Date(`${task.date}T${task.time}`);
+  get pendingCount(): number {
+    return this.taskService.tasks().filter(t => !t.done).length;
+  }
 
-    const notifyTime = new Date(
-      taskDateTime.getTime() - (task.reminder * 60000)
-    );
+  openSheet(): void {
+    this.newText = '';
+    this.newDate = this.today();
+    this.newTime = '';
+    this.sheetOpen = true;
+  }
 
-    const now = new Date();
-    const delay = notifyTime.getTime() - now.getTime();
+  closeSheet(): void {
+    this.sheetOpen = false;
+  }
 
-    if (delay > 0) {
-      setTimeout(() => {
-        new Notification("📌 Lembrete", {
-          body: `${task.text} em ${task.reminder} min`
-        });
-      }, delay);
-    }
+  addTask(): void {
+    if (!this.newText.trim()) return;
+
+    this.taskService.add(this.newText, this.newDate, this.newTime || undefined);
+    this.closeSheet();
+  }
+
+  toggleDone(id: string): void {
+    this.taskService.toggleDone(id);
+  }
+
+  deleteTask(id: string): void {
+    this.taskService.delete(id);
+  }
+
+  // Rótulo amigável de data: "hoje", "amanhã", "em N dias" ou data curta
+  dateLabel(dateStr: string): string {
+    const today = this.today();
+    const diff = this.daysBetween(today, dateStr);
+
+    if (diff === 0) return 'hoje';
+    if (diff === 1) return 'amanhã';
+    if (diff > 1 && diff <= 7) return `em ${diff} dias`;
+    if (diff < 0) return 'atrasada';
+
+    const [, month, day] = dateStr.split('-');
+    const months = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+    return `${day} ${months[Number(month) - 1]}`;
+  }
+
+  isUrgent(dateStr: string): boolean {
+    const diff = this.daysBetween(this.today(), dateStr);
+    return diff <= 0;
+  }
+
+  private today(): string {
+    return new Date().toISOString().split('T')[0];
+  }
+
+  private daysBetween(fromStr: string, toStr: string): number {
+    const from = new Date(fromStr);
+    const to = new Date(toStr);
+    const ms = to.getTime() - from.getTime();
+    return Math.round(ms / (1000 * 60 * 60 * 24));
   }
 }

@@ -1,31 +1,274 @@
-.form input {
-  width: 100%;
-  margin-bottom: 8px;
-  padding: 10px;
-  border-radius: 10px;
-  border: 1px solid #ddd;
+.page {
+  padding: 20px;
+  padding-bottom: 90px;
+  animation: fadeIn 0.6s ease;
 }
 
-.form button {
-  width: 100%;
-  padding: 10px;
-  border-radius: 10px;
-  background: #ff7aa2;
-  color: white;
-  border: none;
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-li {
+.header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #f7f7f7;
-  margin: 5px 0;
-  padding: 10px;
-  border-radius: 10px;
+  margin-bottom: 16px;
 }
 
-.done {
+.header h2 {
+  margin: 0;
+}
+
+.header p {
+  color: #888;
+  font-size: 13px;
+  margin: 2px 0 0;
+}
+
+.fab {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: #ff7aa2;
+  color: white;
+  font-size: 22px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.fab:active {
+  transform: scale(0.95);
+}
+
+/* tabs */
+.tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.tabs button {
+  flex: 1;
+  padding: 8px;
+  font-size: 13px;
+  border-radius: 10px;
+  border: 1px solid #eee;
+  background: white;
+  color: #888;
+}
+
+.tabs button.active {
+  background: #ff7aa2;
+  color: white;
+  border-color: #ff7aa2;
+  font-weight: 500;
+}
+
+/* lista de tarefas */
+.task-list {
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+  margin-bottom: 20px;
+}
+
+.task-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-bottom: 1px solid #f3f3f3;
+}
+
+.task-row:last-child {
+  border-bottom: none;
+}
+
+.check {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1.5px solid #ddd;
+  background: transparent;
+  flex-shrink: 0;
+}
+
+.check:active {
+  transform: scale(0.9);
+}
+
+.task-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.task-text {
+  font-size: 14px;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.task-meta {
+  font-size: 12px;
+  color: #aaa;
+  margin: 2px 0 0;
+}
+
+.badge {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 3px 8px;
+  border-radius: 99px;
+  background: #f3f3f3;
+  color: #888;
+  white-space: nowrap;
+}
+
+.badge.urgent {
+  background: #fde6e6;
+  color: #c0392b;
+}
+
+.delete {
+  border: none;
+  background: transparent;
+  color: #ccc;
+  font-size: 18px;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.empty {
+  text-align: center;
+  color: #aaa;
+  font-size: 13px;
+  padding: 24px 0;
+  margin: 0;
+}
+
+/* concluídas */
+.completed-section {
+  margin-top: 4px;
+}
+
+.completed-label {
+  font-size: 13px;
+  color: #aaa;
+  margin: 0 0 8px;
+}
+
+.completed-list {
+  background: #f8f9fa;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.completed-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+}
+
+.check.done {
+  background: #28a745;
+  border-color: #28a745;
+}
+
+.task-text.done {
+  flex: 1;
+  color: #aaa;
   text-decoration: line-through;
-  opacity: 0.6;
+  margin: 0;
+}
+
+/* bottom sheet */
+.sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+  z-index: 10;
+}
+
+.sheet {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: white;
+  border-radius: 20px 20px 0 0;
+  padding: 14px 20px calc(24px + env(safe-area-inset-bottom));
+  transform: translateY(100%);
+  transition: transform 0.25s ease;
+  z-index: 11;
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+}
+
+.sheet.open {
+  transform: translateY(0);
+}
+
+.sheet-handle {
+  width: 36px;
+  height: 4px;
+  background: #ddd;
+  border-radius: 99px;
+  margin: 0 auto 14px;
+}
+
+.sheet h3 {
+  margin: 0 0 12px;
+}
+
+.sheet input {
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid #ddd;
+  margin-bottom: 10px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.sheet-row {
+  display: flex;
+  gap: 8px;
+}
+
+.sheet-row input {
+  flex: 1;
+}
+
+.sheet-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.sheet-actions button {
+  flex: 1;
+  padding: 12px;
+  border-radius: 12px;
+  border: none;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.sheet-actions .cancel {
+  background: #f3f3f3;
+  color: #666;
+}
+
+.sheet-actions .confirm {
+  background: #ff7aa2;
+  color: white;
 }

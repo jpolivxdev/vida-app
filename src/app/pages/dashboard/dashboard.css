@@ -25,7 +25,7 @@
 }
 
 .header p {
-  color: #888;
+  color: #666;
   font-size: 14px;
 }
 
@@ -92,58 +92,8 @@
     transform: translateX(0);
   }
 }
-.goal input {
-  width: 100%;
-  margin-bottom: 8px;
-  padding: 10px;
-  border-radius: 10px;
-  border: 1px solid #ddd;
-}
 
-.goal button {
-  width: 100%;
-  padding: 10px;
-  border: none;
-  border-radius: 10px;
-  background: #ff7aa2;
-  color: white;
-  font-weight: bold;
-}
-
-/* barra */
-.progress {
-  height: 10px;
-  background: #eee;
-  border-radius: 10px;
-  margin: 10px 0;
-}
-
-.progress-bar {
-  height: 100%;
-  background: linear-gradient(90deg, #ff7aa2, #ff4d88);
-  border-radius: 10px;
-  transition: 0.4s;
-}
-.goal input {
-  width: 100%;
-  margin-bottom: 8px;
-  padding: 10px;
-  border-radius: 10px;
-  border: 1px solid #ddd;
-}
-
-.goal button {
-  width: 100%;
-  padding: 10px;
-  border: none;
-  border-radius: 10px;
-  background: #ff7aa2;
-  color: white;
-  font-weight: bold;
-  margin-bottom: 8px;
-}
-
-/* botões rápidos */
+/* botões rápidos (se ainda usar em outro lugar) */
 .quick-buttons {
   display: flex;
   gap: 5px;
@@ -156,29 +106,15 @@
   color: #333;
 }
 
-/* barra */
-.progress {
-  height: 10px;
-  background: #eee;
-  border-radius: 10px;
-  margin: 10px 0;
-}
-
-.progress-bar {
-  height: 100%;
-  background: linear-gradient(90deg, #ff7aa2, #ff4d88);
-  border-radius: 10px;
-  transition: 0.4s;
-}
-
-/* mensagem */
+/* mensagem de feedback */
 .msg {
   text-align: center;
   font-size: 13px;
   color: #28a745;
+  margin: 8px 0;
 }
 
-/* 🎉 animação quando completa */
+/* card pulsa quando a meta é atingida */
 .completed {
   animation: pop 0.5s ease;
   border: 2px solid #28a745;
@@ -195,27 +131,134 @@
     transform: scale(1);
   }
 }
-.tasks li {
-  padding: 8px;
+
+/* ===== CARD DE META (novo layout com círculo) ===== */
+
+.goal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 14px;
+}
+
+.goal-header h3 {
+  margin: 0;
+}
+
+.goal-circle {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  flex-shrink: 0;
+}
+
+.circle-track {
+  fill: none;
+  stroke: #f0f0f0;
+  stroke-width: 6;
+}
+
+.circle-progress {
+  fill: none;
+  stroke: #ff7aa2;
+  stroke-width: 6;
+  stroke-linecap: round;
+  transform: rotate(-90deg);
+  transform-origin: 32px 32px;
+  transition: stroke-dashoffset 0.4s ease;
+}
+
+.goal-percent {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: bold;
+  color: #333;
+}
+
+.goal-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.goal-stat {
+  background: #f8f9fa;
   border-radius: 10px;
-  background: #f5f5f5;
-  margin-bottom: 6px;
+  padding: 10px 12px;
 }
 
-.header p {
-  color: #666;
-  font-size: 14px;
+.goal-stat .label {
+  font-size: 12px;
+  color: #888;
+  margin: 0 0 2px;
 }
 
-.progress {
-  height: 10px;
+.goal-stat .value {
+  font-size: 16px;
+  font-weight: bold;
+  margin: 0;
+}
+
+.quick-add {
+  display: flex;
+  gap: 8px;
+}
+
+.quick-add input {
+  flex: 1;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+}
+
+.quick-add button {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 10px;
+  background: #ff7aa2;
+  color: white;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.edit-goal {
+  margin-top: 14px;
+}
+
+.edit-goal summary {
+  font-size: 13px;
+  color: #888;
+  cursor: pointer;
+}
+
+.edit-goal-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.edit-goal-row input {
+  flex: 1;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+}
+
+.edit-goal-row button {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 10px;
   background: #eee;
-  border-radius: 10px;
-  margin: 10px 0;
+  color: #333;
+  font-weight: 500;
+  white-space: nowrap;
 }
 
-.progress-bar {
-  height: 100%;
-  background: linear-gradient(90deg, #ff7aa2, #ff4d88);
-  border-radius: 10px;
+.goal.completed .circle-progress {
+  stroke: #28a745;
 }

@@ -1,13 +1,13 @@
 body {
   margin: 0;
   font-family: Arial, sans-serif;
-  background: #f5f5f5;
+  background: linear-gradient(135deg, #ffe4ec, #f9f9ff);
 }
 
 .container {
   max-width: 400px;
-  margin: auto;
-  background: white;
+  margin: 0 auto;
+  background: #fff;
   min-height: 100vh;
   position: relative;
   border: 1px solid #ddd;
@@ -23,7 +23,7 @@ body {
   justify-content: space-around;
   background: #fff;
   border-top: 1px solid #ccc;
-  padding: 10px 0;
+  padding: 10px 0 calc(10px + env(safe-area-inset-bottom));
 }
 
 .menu a {
@@ -45,13 +45,3 @@ body {
 .menu a:active {
   transform: scale(0.95);
 }
-body {
-  background: linear-gradient(135deg, #ffe4ec, #f9f9ff);
-}
-.container {
-  max-width: 400px;
-  margin: 0 auto;
-  background: #fff;
-  min-height: 100vh;
-}
-

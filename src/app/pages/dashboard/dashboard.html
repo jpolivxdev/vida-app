@@ -1,64 +1,96 @@
 <div class="page">
 
   <div class="header">
-    <h2>Olá, {{ name }}</h2>
-    <p>{{ getTaskAlert() }}</p>
+    <h2>Início</h2>
+    <p>{{ taskAlert }}</p>
   </div>
 
-  <!-- 💰 saldo -->
+  <!-- saldo -->
   <div class="card balance" (click)="goTo('/finance')">
     <h3>Saldo atual →</h3>
-    <p>R$ {{ getBalance() }}</p>
+    <p>R$ {{ balance }}</p>
   </div>
 
-  <!-- 🎯 meta -->
-  <div class="card goal" [class.completed]="completed">
+  <!-- meta -->
+  <div class="card goal" [class.completed]="isCompleted">
 
-    <h3>🎯 Meta</h3>
+    <div class="goal-header">
+      <div>
+        <h3>Meta de economia</h3>
+      </div>
 
-    <input [(ngModel)]="goal" type="number" placeholder="Meta" />
-    <input [(ngModel)]="saved" type="number" placeholder="Guardado" />
-
-    <button (click)="saveGoal()">Salvar</button>
-
-    <div class="progress">
-      <div class="progress-bar" [style.width.%]="getProgress()"></div>
+      <div class="goal-circle">
+        <svg width="64" height="64" viewBox="0 0 64 64">
+          <circle cx="32" cy="32" r="27" class="circle-track"></circle>
+          <circle
+            cx="32" cy="32" r="27"
+            class="circle-progress"
+            [attr.stroke-dasharray]="circleCircumference"
+            [attr.stroke-dashoffset]="circleDashoffset"
+          ></circle>
+        </svg>
+        <span class="goal-percent">{{ progress }}%</span>
+      </div>
     </div>
 
-    <p>{{ saved }} / {{ goal }}</p>
+    <div class="goal-stats">
+      <div class="goal-stat">
+        <p class="label">Guardado</p>
+        <p class="value">R$ {{ goal.saved }}</p>
+      </div>
+      <div class="goal-stat">
+        <p class="label">Faltam</p>
+        <p class="value">R$ {{ remaining }}</p>
+      </div>
+    </div>
+
+    <p class="msg" *ngIf="savedMessage">{{ savedMessage }}</p>
+
+    <div class="quick-add">
+      <input [(ngModel)]="addAmount" type="number" placeholder="Adicionar valor" />
+      <button (click)="addToGoal()">Adicionar</button>
+    </div>
+
+    <details class="edit-goal">
+      <summary>Editar meta total</summary>
+      <div class="edit-goal-row">
+        <input [(ngModel)]="goalInput" type="number" placeholder="Nova meta" />
+        <button (click)="setGoalTarget()">Salvar</button>
+      </div>
+    </details>
 
   </div>
 
-  <!-- 📋 HOJE -->
+  <!-- tarefas de hoje -->
   <div class="card tasks" (click)="goTo('/tasks')">
 
-    <h3>Hoje 📋</h3>
+    <h3>Hoje</h3>
 
     <ul>
-      <li *ngFor="let task of getTodayTasks()">
+      <li *ngFor="let task of todayTasks">
         {{ task.text }}
       </li>
     </ul>
 
-    <small *ngIf="getTodayTasks().length === 0">
-      Nada hoje 😌
+    <small *ngIf="todayTasks.length === 0">
+      Nada por aqui hoje
     </small>
 
   </div>
 
-  <!-- 📅 PRÓXIMAS -->
+  <!-- próximas tarefas -->
   <div class="card tasks" (click)="goTo('/tasks')">
 
-    <h3>Próximas ⏳</h3>
+    <h3>Próximas</h3>
 
     <ul>
-      <li *ngFor="let task of getNextTasks()">
+      <li *ngFor="let task of nextTasks">
         {{ task.text }} - {{ task.date }}
       </li>
     </ul>
 
-    <small *ngIf="getNextTasks().length === 0">
-      Sem próximas tarefas 😌
+    <small *ngIf="nextTasks.length === 0">
+      Sem próximas tarefas
     </small>
 
   </div>
