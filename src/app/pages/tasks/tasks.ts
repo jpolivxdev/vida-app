@@ -1,104 +1,93 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { TaskService } from './task.service';
-import { Task } from './task.model';
+
+import { relativeDayLabel, todayIso } from '../../core/date.util';
+import { REMIND_OPTIONS, Task } from '../../models/task';
+import { TaskService } from '../../services/task.service';
 
 type Filter = 'all' | 'today' | 'upcoming';
 
 @Component({
   selector: 'app-tasks',
-  standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [FormsModule],
   templateUrl: './tasks.html',
-  styleUrl: './tasks.css'
+  styleUrl: './tasks.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class TasksComponent {
+export class TasksPage {
+  protected readonly tasks = inject(TaskService);
+  protected readonly remindOptions = REMIND_OPTIONS;
 
-  filter: Filter = 'all';
-  sheetOpen = false;
+  protected readonly filter = signal<Filter>('all');
+  protected readonly sheetOpen = signal(false);
 
-  newText = '';
-  newDate = this.today();
-  newTime = '';
+  protected readonly draft = signal({
+    text: '',
+    date: todayIso(),
+    time: '',
+    remindBefore: 0,
+  });
 
-  constructor(private taskService: TaskService) {}
-
-  get pending(): Task[] {
-    const all = this.taskService.tasks().filter(t => !t.done);
-    const today = this.today();
-
-    if (this.filter === 'today') {
-      return all.filter(t => t.date === today);
+  protected readonly visible = computed<Task[]>(() => {
+    const pending = this.tasks.pending();
+    const today = todayIso();
+    switch (this.filter()) {
+      case 'today':
+        return pending.filter((t) => t.date === today);
+      case 'upcoming':
+        return pending.filter((t) => t.date > today);
+      default:
+        return pending;
     }
-    if (this.filter === 'upcoming') {
-      return all.filter(t => t.date > today);
-    }
-    return all;
+  });
+
+  protected dayLabel(dateIso: string): string {
+    return relativeDayLabel(dateIso);
   }
 
-  get completed(): Task[] {
-    return this.taskService.tasks().filter(t => t.done);
+  protected isUrgent(task: Task): boolean {
+    return this.tasks.isUrgent(task);
   }
 
-  get pendingCount(): number {
-    return this.taskService.tasks().filter(t => !t.done).length;
+  protected patch(key: 'text' | 'date' | 'time', value: string): void {
+    this.draft.update((d) => ({ ...d, [key]: value }));
   }
 
-  openSheet(): void {
-    this.newText = '';
-    this.newDate = this.today();
-    this.newTime = '';
-    this.sheetOpen = true;
+  protected setRemind(minutes: number): void {
+    this.draft.update((d) => ({ ...d, remindBefore: minutes }));
   }
 
-  closeSheet(): void {
-    this.sheetOpen = false;
+  protected openSheet(): void {
+    this.draft.set({ text: '', date: todayIso(), time: '', remindBefore: 0 });
+    this.sheetOpen.set(true);
   }
 
-  addTask(): void {
-    if (!this.newText.trim()) return;
-
-    this.taskService.add(this.newText, this.newDate, this.newTime || undefined);
-    this.closeSheet();
+  protected closeSheet(): void {
+    this.sheetOpen.set(false);
   }
 
-  toggleDone(id: string): void {
-    this.taskService.toggleDone(id);
+  protected addTask(): void {
+    const d = this.draft();
+    const created = this.tasks.add({
+      text: d.text,
+      date: d.date,
+      time: d.time || undefined,
+      remindBefore: d.remindBefore || undefined,
+    });
+    if (created) this.closeSheet();
   }
 
-  deleteTask(id: string): void {
-    this.taskService.delete(id);
+  protected toggle(id: string): void {
+    this.tasks.toggle(id);
   }
 
-  // Rótulo amigável de data: "hoje", "amanhã", "em N dias" ou data curta
-  dateLabel(dateStr: string): string {
-    const today = this.today();
-    const diff = this.daysBetween(today, dateStr);
-
-    if (diff === 0) return 'hoje';
-    if (diff === 1) return 'amanhã';
-    if (diff > 1 && diff <= 7) return `em ${diff} dias`;
-    if (diff < 0) return 'atrasada';
-
-    const [, month, day] = dateStr.split('-');
-    const months = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
-    return `${day} ${months[Number(month) - 1]}`;
-  }
-
-  isUrgent(dateStr: string): boolean {
-    const diff = this.daysBetween(this.today(), dateStr);
-    return diff <= 0;
-  }
-
-  private today(): string {
-    return new Date().toISOString().split('T')[0];
-  }
-
-  private daysBetween(fromStr: string, toStr: string): number {
-    const from = new Date(fromStr);
-    const to = new Date(toStr);
-    const ms = to.getTime() - from.getTime();
-    return Math.round(ms / (1000 * 60 * 60 * 24));
+  protected remove(id: string): void {
+    this.tasks.remove(id);
   }
 }

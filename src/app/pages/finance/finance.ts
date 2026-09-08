@@ -1,112 +1,144 @@
-import { Component, ElementRef, ViewChild, AfterViewInit, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  computed,
+  effect,
+  inject,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Chart } from 'chart.js/auto';
-import { FinanceService } from './finance.service';
-import { Category, TransactionType } from './transaction.model';
+import {
+  ArcElement,
+  Chart,
+  DoughnutController,
+  Legend,
+  Tooltip,
+} from 'chart.js';
+
+import { BrlPipe, formatBrl } from '../../core/brl.pipe';
+import {
+  CATEGORIES,
+  Category,
+  TransactionType,
+  categoryColor,
+} from '../../models/transaction';
+import { FinanceService } from '../../services/finance.service';
+
+Chart.register(DoughnutController, ArcElement, Legend, Tooltip);
 
 @Component({
   selector: 'app-finance',
-  standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [FormsModule, BrlPipe],
   templateUrl: './finance.html',
-  styleUrl: './finance.css'
+  styleUrl: './finance.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class FinanceComponent implements AfterViewInit {
+export class FinancePage {
+  protected readonly finance = inject(FinanceService);
 
-  // @ViewChild garante que só acessamos o canvas depois que ele
-  // existe de fato no DOM — sem precisar de setTimeout artificial.
-  @ViewChild('financeChart') chartRef!: ElementRef<HTMLCanvasElement>;
-
-  description = '';
-  amount: number | null = null;
-  type: TransactionType = 'expense';
-  category: Category = 'Alimentação';
-
-  readonly categories: Category[] = [
-    'Alimentação', 'Transporte', 'Lazer', 'Compras', 'Outros'
-  ];
-
+  private readonly canvas =
+    viewChild<ElementRef<HTMLCanvasElement>>('chartCanvas');
   private chart?: Chart;
 
-  // O constructor precisa vir ANTES das propriedades que usam
-  // "this.finance" — em TS/JS as propriedades de instância são
-  // inicializadas na ordem em que aparecem na classe, então
-  // "this.finance" só existe a partir daqui pra baixo.
-  constructor(private finance: FinanceService) {
-    // Dados e cálculos vêm do service — o componente só "exibe".
-  }
+  protected readonly categories = CATEGORIES;
+  protected readonly color = categoryColor;
 
-  get transactions() {
-    return this.finance.transactions;
-  }
+  protected readonly description = signal('');
+  protected readonly amount = signal<number | null>(null);
+  protected readonly type = signal<TransactionType>('expense');
+  protected readonly category = signal<Category>('Alimentação');
+  protected readonly formOpen = signal(false);
+  protected readonly error = signal('');
 
-  get balance() {
-    return this.finance.balance;
-  }
-
-  get expensesByCategory() {
-    return this.finance.expensesByCategory;
-  }
-
-  readonly weeklyComparisonMessage = computed(() =>
-    this.finance.getWeeklyComparisonMessage()
-  );
-
-  readonly mainInsight = computed(() => {
-    const byCategory = this.expensesByCategory();
-    if (byCategory.length === 0) return 'Adicione gastos para ver insights 👀';
-
-    const top = byCategory.reduce((max, c) => c.total > max.total ? c : max);
-    return `Você gastou mais com ${top.category} (R$ ${top.total}) 👀`;
+  protected readonly topInsight = computed(() => {
+    const top = this.finance.topCategory();
+    if (!top) return 'Registre gastos para ver seus insights 👀';
+    return `Maior gasto: ${top.category} — ${formatBrl(top.total)}`;
   });
 
-  ngAfterViewInit(): void {
-    this.createChart();
-  }
+  protected readonly hasChart = computed(
+    () => this.finance.expensesByCategory().length > 0,
+  );
 
-  addTransaction(): void {
-    if (!this.amount) return;
+  constructor() {
+    effect(() => {
+      const el = this.canvas()?.nativeElement;
+      const data = this.finance.expensesByCategory();
+      if (!el) return;
 
-    this.finance.add({
-      description: this.description,
-      amount: this.amount,
-      type: this.type,
-      category: this.category
-    });
-
-    this.description = '';
-    this.amount = null;
-    this.createChart();
-  }
-
-  deleteTransaction(id: string): void {
-    this.finance.delete(id);
-    this.createChart();
-  }
-
-  groupedByDay() {
-    return this.finance.groupByDay();
-  }
-
-  private createChart(): void {
-    const byCategory = this.expensesByCategory();
-
-    this.chart?.destroy();
-
-    this.chart = new Chart(this.chartRef.nativeElement, {
-      type: 'doughnut',
-      data: {
-        labels: byCategory.map(c => c.category),
-        datasets: [{
-          data: byCategory.map(c => c.total),
-          backgroundColor: byCategory.map(c => this.finance.getColorFor(c.category)),
-          borderRadius: 10
-        }]
-      },
-      options: {
-        plugins: { legend: { position: 'bottom' } }
+      if (data.length === 0) {
+        this.chart?.destroy();
+        this.chart = undefined;
+        return;
       }
+
+      const labels = data.map((d) => d.category);
+      const values = data.map((d) => d.total);
+      const colors = data.map((d) => categoryColor(d.category));
+
+      if (this.chart) {
+        this.chart.data.labels = labels;
+        this.chart.data.datasets[0].data = values;
+        this.chart.data.datasets[0].backgroundColor = colors;
+        this.chart.update();
+        return;
+      }
+
+      this.chart = new Chart(el, {
+        type: 'doughnut',
+        data: {
+          labels,
+          datasets: [
+            { data: values, backgroundColor: colors, borderWidth: 0, hoverOffset: 6 },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '62%',
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: { boxWidth: 10, boxHeight: 10, padding: 12, font: { size: 11 } },
+            },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => ` ${ctx.label}: ${formatBrl(Number(ctx.raw))}`,
+              },
+            },
+          },
+        },
+      });
     });
+  }
+
+  protected toggleForm(): void {
+    this.formOpen.update((v) => !v);
+    this.error.set('');
+  }
+
+  protected submit(): void {
+    const ok = this.finance.add({
+      description: this.description(),
+      amount: Number(this.amount()),
+      type: this.type(),
+      category: this.category(),
+    });
+
+    if (!ok) {
+      this.error.set('Preencha uma descrição e um valor maior que zero.');
+      return;
+    }
+
+    this.description.set('');
+    this.amount.set(null);
+    this.error.set('');
+    this.formOpen.set(false);
+  }
+
+  protected remove(id: string): void {
+    this.finance.remove(id);
   }
 }

@@ -1,264 +1,229 @@
-.page {
-  padding: 20px;
-  padding-bottom: 90px;
-  animation: fadeIn 0.6s ease;
+:host {
+  display: block;
 }
 
-/* animação geral */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.header {
-  margin-bottom: 20px;
-}
-
-.header h2 {
-  margin: 0;
-}
-
-.header p {
-  color: #666;
-  font-size: 14px;
-}
-
-/* cards */
 .card {
-  background: white;
-  border-radius: 18px;
-  padding: 15px;
-  margin-bottom: 15px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.06);
-  transition: 0.2s;
-  cursor: pointer;
-}
-
-.card:hover {
-  transform: translateY(-3px);
-}
-
-.card:active {
-  transform: scale(0.98);
-}
-
-/* saldo */
-.balance {
-  background: linear-gradient(135deg, #ff7aa2, #ffb3c6);
-  color: white;
-  text-align: center;
-}
-
-.balance p {
-  font-size: 26px;
-  font-weight: bold;
-}
-
-/* insight */
-.insight {
-  background: linear-gradient(135deg, #fff3cd, #ffe69c);
-  color: #856404;
-  font-weight: 500;
-}
-
-/* tarefas */
-.tasks ul {
-  list-style: none;
-  padding: 0;
-}
-
-.tasks li {
-  margin-bottom: 8px;
-  padding: 8px;
-  border-radius: 10px;
-  background: #f8f9fa;
-  animation: fadeInItem 0.4s ease;
-}
-
-/* animação tarefas */
-@keyframes fadeInItem {
-  from {
-    opacity: 0;
-    transform: translateX(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-/* botões rápidos (se ainda usar em outro lugar) */
-.quick-buttons {
-  display: flex;
-  gap: 5px;
-  margin-bottom: 10px;
-}
-
-.quick-buttons button {
-  flex: 1;
-  background: #eee;
-  color: #333;
-}
-
-/* mensagem de feedback */
-.msg {
-  text-align: center;
-  font-size: 13px;
-  color: #28a745;
-  margin: 8px 0;
-}
-
-/* card pulsa quando a meta é atingida */
-.completed {
-  animation: pop 0.5s ease;
-  border: 2px solid #28a745;
-}
-
-@keyframes pop {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.03);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-
-/* ===== CARD DE META (novo layout com círculo) ===== */
-
-.goal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
+  display: block;
   margin-bottom: 14px;
 }
 
-.goal-header h3 {
-  margin: 0;
+/* ---- saldo ---- */
+
+.balance-card {
+  background: linear-gradient(135deg, var(--rose), var(--rose-soft));
+  border: none;
+  color: #fff;
+  box-shadow: 0 14px 30px rgba(255, 122, 162, 0.35);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
-.goal-circle {
+.balance-label {
+  font-size: 13px;
+  font-weight: 600;
+  opacity: 0.9;
+}
+
+.balance-value {
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.balance-go {
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  opacity: 0.85;
+}
+
+.balance-card:active {
+  transform: scale(0.99);
+}
+
+/* ---- meta ---- */
+
+.goal-card.is-complete {
+  border-color: var(--ok);
+  animation: pop 0.5s ease;
+}
+
+.goal-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.goal-title {
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.goal-sub {
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--ink-soft);
+}
+
+.goal-ring {
   position: relative;
   width: 64px;
   height: 64px;
   flex-shrink: 0;
 }
 
-.circle-track {
+.ring-track {
   fill: none;
-  stroke: #f0f0f0;
+  stroke: var(--surface-muted);
   stroke-width: 6;
 }
 
-.circle-progress {
+.ring-value {
   fill: none;
-  stroke: #ff7aa2;
+  stroke: var(--rose);
   stroke-width: 6;
   stroke-linecap: round;
   transform: rotate(-90deg);
   transform-origin: 32px 32px;
-  transition: stroke-dashoffset 0.4s ease;
+  transition: stroke-dashoffset 0.5s ease;
 }
 
-.goal-percent {
+.is-complete .ring-value {
+  stroke: var(--ok);
+}
+
+.ring-label {
   position: absolute;
   inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 13px;
-  font-weight: bold;
-  color: #333;
+  font-weight: 800;
 }
 
 .goal-stats {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 8px;
-  margin-bottom: 14px;
-}
-
-.goal-stat {
-  background: #f8f9fa;
-  border-radius: 10px;
-  padding: 10px 12px;
-}
-
-.goal-stat .label {
-  font-size: 12px;
-  color: #888;
-  margin: 0 0 2px;
-}
-
-.goal-stat .value {
-  font-size: 16px;
-  font-weight: bold;
-  margin: 0;
-}
-
-.quick-add {
-  display: flex;
-  gap: 8px;
-}
-
-.quick-add input {
-  flex: 1;
-  padding: 10px;
-  border-radius: 10px;
-  border: 1px solid #ddd;
-}
-
-.quick-add button {
-  padding: 10px 16px;
-  border: none;
-  border-radius: 10px;
-  background: #ff7aa2;
-  color: white;
-  font-weight: bold;
-  white-space: nowrap;
-}
-
-.edit-goal {
   margin-top: 14px;
 }
 
-.edit-goal summary {
-  font-size: 13px;
-  color: #888;
-  cursor: pointer;
+.goal-stat {
+  background: var(--surface-muted);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
-.edit-goal-row {
+.goal-stat-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.goal-stat-value {
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.goal-flash {
+  margin-top: 12px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ok);
+}
+
+.goal-row {
   display: flex;
   gap: 8px;
-  margin-top: 8px;
+  margin-top: 14px;
 }
 
-.edit-goal-row input {
+.goal-row .field {
   flex: 1;
-  padding: 10px;
-  border-radius: 10px;
-  border: 1px solid #ddd;
 }
 
-.edit-goal-row button {
-  padding: 10px 16px;
-  border: none;
-  border-radius: 10px;
-  background: #eee;
-  color: #333;
-  font-weight: 500;
+.goal-row .btn {
+  flex-shrink: 0;
   white-space: nowrap;
 }
 
-.goal.completed .circle-progress {
-  stroke: #28a745;
+.goal-edit {
+  margin-top: 12px;
+}
+
+.goal-edit summary {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink-faint);
+  cursor: pointer;
+  list-style: none;
+  padding: 4px 0;
+}
+
+.goal-edit summary::-webkit-details-marker {
+  display: none;
+}
+
+/* ---- listas de tarefas ---- */
+
+.list-card:active {
+  transform: scale(0.99);
+}
+
+.list-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.list-head h2 {
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.list-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-muted);
+  animation: fadeInItem 0.35s ease;
+}
+
+.list-row + .list-row {
+  margin-top: 8px;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--rose);
+  flex-shrink: 0;
+}
+
+.list-text {
+  flex: 1;
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.list-meta {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink-faint);
+  flex-shrink: 0;
 }

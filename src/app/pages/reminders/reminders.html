@@ -1,1 +1,61 @@
-<p>reminders works!</p>
+<div class="page">
+
+  <header class="page-head">
+    <h1>Lembretes</h1>
+    <p>Avisos das tarefas que têm horário marcado</p>
+  </header>
+
+  <section class="card notify-card" [attr.data-state]="reminders.permission()">
+    <div class="notify-top">
+      <span class="notify-icon">🔔</span>
+      <div>
+        <h2>Notificações</h2>
+        <p>{{ statusText() }}</p>
+      </div>
+    </div>
+
+    <div class="notify-actions">
+      @if (canAskPermission()) {
+        <button class="btn btn-primary btn-block" type="button" (click)="enable()">
+          Ativar notificações
+        </button>
+      }
+      <button class="btn btn-block" type="button" (click)="reminders.sendTest()">
+        Enviar aviso de teste
+      </button>
+    </div>
+  </section>
+
+  <p class="section-title">Agendados</p>
+
+  @for (item of reminders.scheduled(); track item.task.id) {
+    <div class="card reminder">
+      <div class="reminder-time">
+        <span class="reminder-hour">{{ timeLabel(item.eventAt) }}</span>
+        <span class="reminder-day">{{ dayLabel(item.eventAt) }}</span>
+      </div>
+      <div class="reminder-info">
+        <span class="reminder-text">{{ item.task.text }}</span>
+        <span class="reminder-note">
+          Avisa {{ item.task.remindBefore }} min antes ·
+          {{ timeLabel(item.fireAt) }}
+        </span>
+      </div>
+    </div>
+  } @empty {
+    <div class="card empty-card">
+      <p>Nenhum lembrete agendado.</p>
+      <p class="empty-hint">
+        Crie uma tarefa com horário e escolha a antecedência do aviso.
+      </p>
+      <a class="btn btn-primary" routerLink="/tarefas">Ir para Tarefas</a>
+    </div>
+  }
+
+  <p class="foot-note">
+    Os lembretes são verificados enquanto o app está aberto ou em segundo plano no
+    navegador. Para avisos com o app totalmente fechado seria necessário um
+    service worker (melhoria futura).
+  </p>
+
+</div>

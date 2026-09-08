@@ -43,9 +43,11 @@ Aplicação web de gestão pessoal desenvolvida para ajudar no dia a dia — org
 - Tarefas do dia e próximas tarefas
 - Alertas automáticos
 
-### 🔔 Notificações
-- Lembretes baseados em horário
-- Avisos antes dos compromissos
+### 🔔 Lembretes
+- Tela dedicada com os avisos agendados
+- Notificações do navegador (com permissão do usuário) + aviso dentro do app
+- Antecedência configurável por tarefa (10min, 30min, 1h)
+- Verificação automática enquanto o app está aberto/em segundo plano
 
 ---
 
@@ -77,11 +79,19 @@ Acesse: **http://localhost:4200**
 
 ---
 
+## 🧱 Arquitetura
+
+- **Angular 21** standalone + **zoneless change detection**
+- Estado reativo com **signals** e `computed` nos services (`FinanceService`, `TaskService`, `GoalService`, `ReminderService`)
+- Rotas em português com **lazy loading** por página (bundle inicial ~70 kB gzip)
+- Camada `core/` com storage tipado à prova de falhas, helpers de data no fuso local e pipe de moeda (`R$`)
+- Testes com **Vitest** (`npm test`)
+
 ## 💡 Melhorias Futuras
 
 - 🔐 Sistema de login por usuário
 - ☁️ Sincronização de dados na nuvem
-- 🔔 Notificações push (app fechado)
+- 🔔 Notificações push com Service Worker (app 100% fechado)
 - 📱 Transformar em PWA instalável
 - 📅 Calendário visual completo
 

@@ -1,12 +1,30 @@
-<div class="container">
+<div class="app-frame">
+  <main class="app-scroll">
+    <router-outlet />
+  </main>
 
-  <router-outlet></router-outlet>
-
-  <nav class="menu">
-    <a routerLink="/">🏠 Home</a>
-    <a routerLink="/tasks">✅ Tarefas</a>
-    <a routerLink="/finance">💰 Financeiro</a>
-    <a routerLink="/reminders">⏰ Lembretes</a>
+  <nav class="tabbar">
+    @for (item of nav; track item.path) {
+      <a
+        class="tab"
+        [routerLink]="item.path"
+        routerLinkActive="is-active"
+        [routerLinkActiveOptions]="{ exact: item.exact }"
+      >
+        <span class="tab-icon">{{ item.icon }}</span>
+        <span class="tab-label">{{ item.label }}</span>
+      </a>
+    }
   </nav>
 
+  @if (reminders.toasts().length) {
+    <div class="toast-stack" role="status" aria-live="polite">
+      @for (toast of reminders.toasts(); track toast.id) {
+        <button type="button" class="toast" (click)="reminders.dismissToast(toast.id)">
+          <span class="toast-title">🔔 {{ toast.title }}</span>
+          <span class="toast-body">{{ toast.body }}</span>
+        </button>
+      }
+    </div>
+  }
 </div>
