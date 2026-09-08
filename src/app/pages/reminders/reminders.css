@@ -1,0 +1,134 @@
+:host {
+  display: block;
+}
+
+.notify-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.notify-top {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.notify-icon {
+  font-size: 26px;
+  line-height: 1;
+}
+
+.notify-top h2 {
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.notify-top p {
+  margin-top: 3px;
+  font-size: 13px;
+  color: var(--ink-soft);
+  line-height: 1.4;
+}
+
+.notify-card[data-state='granted'] {
+  border-color: var(--ok);
+  background: var(--ok-tint);
+}
+
+.notify-card[data-state='denied'] {
+  border-color: var(--danger);
+  background: var(--danger-tint);
+}
+
+.notify-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ---- lista de agendados ---- */
+
+.reminder {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  animation: fadeInItem 0.3s ease;
+}
+
+.reminder-time {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 56px;
+  padding-right: 14px;
+  border-right: 1px solid var(--line);
+}
+
+.reminder-hour {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.reminder-day {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ink-faint);
+  text-transform: capitalize;
+}
+
+.reminder-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.reminder-text {
+  font-size: 14px;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.reminder-note {
+  font-size: 12px;
+  color: var(--ink-faint);
+}
+
+/* ---- vazio ---- */
+
+.empty-card {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 24px 16px;
+}
+
+.empty-card p {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.empty-hint {
+  font-size: 12px !important;
+  font-weight: 400 !important;
+  color: var(--ink-soft);
+}
+
+.empty-card .btn {
+  margin-top: 10px;
+}
+
+.foot-note {
+  margin: 18px 4px 0;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--ink-faint);
+}

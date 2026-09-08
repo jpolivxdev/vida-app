@@ -1,70 +1,140 @@
 <div class="page">
 
-  <div class="header">
+  <header class="tasks-head">
     <div>
-      <h2>Tarefas</h2>
-      <p>{{ pendingCount }} pendente{{ pendingCount === 1 ? '' : 's' }}</p>
+      <h1>Tarefas</h1>
+      <p>{{ tasks.pendingCount() }} pendente{{ tasks.pendingCount() === 1 ? '' : 's' }}</p>
     </div>
-    <button class="fab" (click)="openSheet()" aria-label="Nova tarefa">+</button>
-  </div>
+    <button class="fab" type="button" (click)="openSheet()" aria-label="Nova tarefa">+</button>
+  </header>
 
   <div class="tabs">
-    <button [class.active]="filter === 'all'" (click)="filter = 'all'">Todas</button>
-    <button [class.active]="filter === 'today'" (click)="filter = 'today'">Hoje</button>
-    <button [class.active]="filter === 'upcoming'" (click)="filter = 'upcoming'">Próximas</button>
+    <button type="button" [class.active]="filter() === 'all'" (click)="filter.set('all')">
+      Todas
+    </button>
+    <button type="button" [class.active]="filter() === 'today'" (click)="filter.set('today')">
+      Hoje
+    </button>
+    <button type="button" [class.active]="filter() === 'upcoming'" (click)="filter.set('upcoming')">
+      Próximas
+    </button>
   </div>
 
   <div class="task-list">
-    <div class="task-row" *ngFor="let task of pending">
-      <button class="check" (click)="toggleDone(task.id)" aria-label="Marcar como feita"></button>
+    @for (task of visible(); track task.id) {
+      <div class="task-row">
+        <button
+          class="check"
+          type="button"
+          (click)="toggle(task.id)"
+          aria-label="Concluir tarefa"
+        ></button>
 
-      <div class="task-info">
-        <p class="task-text">{{ task.text }}</p>
-        <p class="task-meta" *ngIf="task.time">{{ task.time }}</p>
+        <div class="task-info">
+          <p class="task-text">{{ task.text }}</p>
+          @if (task.time) {
+            <p class="task-meta">
+              {{ task.time }}
+              @if (task.remindBefore) {
+                · 🔔 {{ task.remindBefore }}min antes
+              }
+            </p>
+          }
+        </div>
+
+        <span class="pill" [class.pill-urgent]="isUrgent(task)">
+          {{ dayLabel(task.date) }}
+        </span>
+
+        <button
+          class="icon-btn"
+          type="button"
+          (click)="remove(task.id)"
+          aria-label="Excluir tarefa"
+        >×</button>
       </div>
-
-      <span class="badge" [class.urgent]="isUrgent(task.date)">
-        {{ dateLabel(task.date) }}
-      </span>
-
-      <button class="delete" (click)="deleteTask(task.id)" aria-label="Excluir tarefa">×</button>
-    </div>
-
-    <p class="empty" *ngIf="pending.length === 0">
-      Nenhuma tarefa por aqui
-    </p>
+    } @empty {
+      <p class="empty">Nenhuma tarefa por aqui ✨</p>
+    }
   </div>
 
-  <div class="completed-section" *ngIf="completed.length > 0">
-    <p class="completed-label">Concluídas ({{ completed.length }})</p>
-
-    <div class="completed-list">
-      <div class="completed-row" *ngFor="let task of completed">
-        <button class="check done" (click)="toggleDone(task.id)" aria-label="Desmarcar"></button>
-        <p class="task-text done">{{ task.text }}</p>
-        <button class="delete" (click)="deleteTask(task.id)" aria-label="Excluir tarefa">×</button>
-      </div>
+  @if (tasks.completed().length) {
+    <p class="section-title">Concluídas ({{ tasks.completed().length }})</p>
+    <div class="task-list done-list">
+      @for (task of tasks.completed(); track task.id) {
+        <div class="task-row">
+          <button
+            class="check done"
+            type="button"
+            (click)="toggle(task.id)"
+            aria-label="Reabrir tarefa"
+          >✓</button>
+          <p class="task-text is-done">{{ task.text }}</p>
+          <button
+            class="icon-btn"
+            type="button"
+            (click)="remove(task.id)"
+            aria-label="Excluir tarefa"
+          >×</button>
+        </div>
+      }
     </div>
+  }
+</div>
+
+@if (sheetOpen()) {
+  <div class="sheet-backdrop" (click)="closeSheet()"></div>
+}
+
+<div class="sheet" [class.open]="sheetOpen()">
+  <div class="sheet-handle"></div>
+  <h2>Nova tarefa</h2>
+
+  <input
+    class="field"
+    [ngModel]="draft().text"
+    (ngModelChange)="patch('text', $event)"
+    name="text"
+    placeholder="O que precisa ser feito?"
+  />
+
+  <div class="sheet-row">
+    <input
+      class="field"
+      type="date"
+      [ngModel]="draft().date"
+      (ngModelChange)="patch('date', $event)"
+      name="date"
+    />
+    <input
+      class="field"
+      type="time"
+      [ngModel]="draft().time"
+      (ngModelChange)="patch('time', $event)"
+      name="time"
+    />
   </div>
 
-  <div class="sheet-backdrop" *ngIf="sheetOpen" (click)="closeSheet()"></div>
-
-  <div class="sheet" [class.open]="sheetOpen">
-    <div class="sheet-handle"></div>
-
-    <h3>Nova tarefa</h3>
-
-    <input [(ngModel)]="newText" placeholder="O que você precisa fazer?" autofocus />
-
-    <div class="sheet-row">
-      <input [(ngModel)]="newDate" type="date" />
-      <input [(ngModel)]="newTime" type="time" />
+  @if (draft().time) {
+    <div class="remind-row">
+      @for (opt of remindOptions; track opt.minutes) {
+        <button
+          type="button"
+          class="remind-chip"
+          [class.active]="draft().remindBefore === opt.minutes"
+          (click)="setRemind(opt.minutes)"
+        >{{ opt.label }}</button>
+      }
     </div>
+  }
 
-    <div class="sheet-actions">
-      <button class="cancel" (click)="closeSheet()">Cancelar</button>
-      <button class="confirm" (click)="addTask()">Adicionar</button>
-    </div>
+  <div class="sheet-actions">
+    <button class="btn btn-ghost" type="button" (click)="closeSheet()">Cancelar</button>
+    <button
+      class="btn btn-primary"
+      type="button"
+      (click)="addTask()"
+      [disabled]="!draft().text.trim()"
+    >Adicionar</button>
   </div>
-
 </div>

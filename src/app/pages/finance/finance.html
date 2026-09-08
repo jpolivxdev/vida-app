@@ -1,69 +1,140 @@
 <div class="page">
 
-  <h2>Financeiro 💰</h2>
+  <header class="page-head">
+    <h1>Financeiro</h1>
+    <p>{{ finance.count() }} lançamento{{ finance.count() === 1 ? '' : 's' }}</p>
+  </header>
 
-  <!-- saldo -->
-  <div class="balance">
-    Saldo: R$ {{ balance() }}
+  <div class="card summary">
+    <div class="summary-main">
+      <span class="summary-label">Saldo</span>
+      <span
+        class="summary-value"
+        [class.amount-neg]="finance.balance() < 0"
+      >{{ finance.balance() | brl }}</span>
+    </div>
+    <div class="summary-split">
+      <div>
+        <span class="summary-label">Entradas</span>
+        <span class="amount-pos">{{ finance.income() | brl }}</span>
+      </div>
+      <div>
+        <span class="summary-label">Saídas</span>
+        <span class="amount-neg">{{ finance.expenses() | brl }}</span>
+      </div>
+    </div>
   </div>
 
-  <!-- 🧠 insight -->
-  <div class="insight">
-    {{ mainInsight() }}
-  </div>
+  <div class="card insight">💡 {{ topInsight() }}</div>
+  <div class="card insight insight-soft">📊 {{ finance.weeklyComparison() }}</div>
 
-  <div class="insight secondary">
-    {{ weeklyComparisonMessage() }}
-  </div>
+  @if (hasChart()) {
+    <div class="card chart-card">
+      <span class="section-inline">Gastos por categoria</span>
+      <div class="chart-box">
+        <canvas #chartCanvas></canvas>
+      </div>
+    </div>
+  }
 
-  <!-- 📊 gráfico -->
-  <canvas #financeChart></canvas>
+  <button class="btn btn-primary btn-block add-toggle" type="button" (click)="toggleForm()">
+    {{ formOpen() ? 'Fechar' : '+ Novo lançamento' }}
+  </button>
 
-  <!-- 📝 formulário -->
-  <div class="form">
-    <input [(ngModel)]="description" placeholder="Descrição" />
+  @if (formOpen()) {
+    <form class="card form" (ngSubmit)="submit()">
+      <div class="type-switch">
+        <button
+          type="button"
+          [class.active]="type() === 'expense'"
+          (click)="type.set('expense')"
+        >Gasto</button>
+        <button
+          type="button"
+          [class.active]="type() === 'income'"
+          (click)="type.set('income')"
+        >Entrada</button>
+      </div>
 
-    <input [(ngModel)]="amount" type="number" placeholder="Valor" />
+      <label class="field-label" for="desc">Descrição</label>
+      <input
+        id="desc"
+        class="field"
+        [ngModel]="description()"
+        (ngModelChange)="description.set($event)"
+        name="description"
+        placeholder="Ex.: mercado, salário..."
+      />
 
-    <select [(ngModel)]="type">
-      <option value="expense">Gasto</option>
-      <option value="income">Entrada</option>
-    </select>
+      <label class="field-label" for="value">Valor</label>
+      <input
+        id="value"
+        class="field"
+        type="number"
+        inputmode="decimal"
+        min="0"
+        step="0.01"
+        [ngModel]="amount()"
+        (ngModelChange)="amount.set($event)"
+        name="amount"
+        placeholder="0,00"
+      />
 
-    <select [(ngModel)]="category">
-      <option *ngFor="let c of categories" [value]="c">
-        {{ c }}
-      </option>
-    </select>
+      <label class="field-label" for="cat">Categoria</label>
+      <select
+        id="cat"
+        class="field"
+        [ngModel]="category()"
+        (ngModelChange)="category.set($event)"
+        name="category"
+      >
+        @for (c of categories; track c) {
+          <option [value]="c">{{ c }}</option>
+        }
+      </select>
 
-    <button (click)="addTransaction()">Adicionar</button>
-  </div>
+      @if (error()) {
+        <p class="form-error">{{ error() }}</p>
+      }
 
-  <!-- 📅 lista agrupada -->
-  <div *ngFor="let group of groupedByDay() | keyvalue">
+      <button class="btn btn-primary btn-block" type="submit">Adicionar</button>
+    </form>
+  }
 
-    <h3>{{ group.key }}</h3>
+  @for (group of finance.byDay(); track group.key) {
+    <div class="day-group">
+      <div class="day-head">
+        <span class="day-label">{{ group.label }}</span>
+        <span
+          class="day-total"
+          [class.amount-pos]="group.total > 0"
+          [class.amount-neg]="group.total < 0"
+        >{{ group.total | brl }}</span>
+      </div>
 
-    <ul>
-      <li *ngFor="let t of group.value">
-
-        <span>
-          {{ t.description }}
-          <small>({{ t.category }})</small>
-        </span>
-
-        <strong
-          [class.income]="t.type === 'income'"
-          [class.expense]="t.type === 'expense'"
-        >
-          R$ {{ t.amount }}
-        </strong>
-
-        <button (click)="deleteTransaction(t.id)">🗑️</button>
-
-      </li>
-    </ul>
-
-  </div>
+      @for (t of group.items; track t.id) {
+        <div class="tx">
+          <span class="tx-dot" [style.background]="color(t.category)"></span>
+          <span class="tx-info">
+            <span class="tx-desc">{{ t.description }}</span>
+            <span class="tx-cat">{{ t.category }}</span>
+          </span>
+          <span
+            class="tx-amount"
+            [class.amount-pos]="t.type === 'income'"
+            [class.amount-neg]="t.type === 'expense'"
+          >{{ t.type === 'income' ? '+' : '−' }} {{ t.amount | brl }}</span>
+          <button
+            class="tx-del"
+            type="button"
+            (click)="remove(t.id)"
+            aria-label="Excluir lançamento"
+          >×</button>
+        </div>
+      }
+    </div>
+  } @empty {
+    <p class="empty">Nenhum lançamento ainda. Adicione o primeiro acima. 🌱</p>
+  }
 
 </div>

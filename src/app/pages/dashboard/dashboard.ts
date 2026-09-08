@@ -1,104 +1,93 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { TaskService } from '../tasks/task.service';
-import { GoalService } from '../tasks/goal.service';
-import { FinanceService } from '../finance/finance.service';
+import { RouterLink } from '@angular/router';
+
+import { BrlPipe } from '../../core/brl.pipe';
+import { relativeDayLabel } from '../../core/date.util';
+import { FinanceService } from '../../services/finance.service';
+import { GoalService } from '../../services/goal.service';
+import { TaskService } from '../../services/task.service';
+
+const CIRCLE_RADIUS = 27;
 
 @Component({
   selector: 'app-dashboard',
-  standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [FormsModule, RouterLink, BrlPipe],
   templateUrl: './dashboard.html',
-  styleUrl: './dashboard.css'
+  styleUrl: './dashboard.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DashboardComponent {
+export class DashboardPage {
+  private readonly finance = inject(FinanceService);
+  protected readonly goals = inject(GoalService);
+  protected readonly tasks = inject(TaskService);
 
-  // Campo temporário só para definir/editar a meta total
-  goalInput = 0;
+  protected readonly balance = this.finance.balance;
+  protected readonly todayTasks = this.tasks.today;
+  protected readonly overdueTasks = this.tasks.overdue;
+  protected readonly upcomingTasks = computed(() =>
+    this.tasks.upcoming().slice(0, 4),
+  );
 
-  // Campo temporário para adicionar um novo valor guardado
-  addAmount: number | null = null;
+  protected readonly depositAmount = signal<number | null>(null);
+  protected readonly targetDraft = signal<number | null>(null);
+  protected readonly flash = signal('');
 
-  savedMessage = '';
+  protected readonly greeting = computed(() => {
+    const h = new Date().getHours();
+    if (h < 6) return 'Boa madrugada';
+    if (h < 12) return 'Bom dia';
+    if (h < 18) return 'Boa tarde';
+    return 'Boa noite';
+  });
 
-  private readonly today = new Date().toISOString().split('T')[0];
+  protected readonly taskAlert = computed(() => {
+    const today = this.todayTasks().length;
+    const late = this.overdueTasks().length;
+    if (late > 0) {
+      return `${late} tarefa${late > 1 ? 's' : ''} atrasada${late > 1 ? 's' : ''}`;
+    }
+    if (today === 0) return 'Nenhuma tarefa para hoje 🎉';
+    return `Você tem ${today} tarefa${today > 1 ? 's' : ''} hoje`;
+  });
 
-  constructor(
-    private router: Router,
-    private tasks: TaskService,
-    private goalService: GoalService,
-    private finance: FinanceService
-  ) {
-    this.goalInput = this.goalService.goal().target;
+  protected readonly circumference = 2 * Math.PI * CIRCLE_RADIUS;
+
+  protected readonly dashOffset = computed(
+    () => this.circumference * (1 - this.goals.progress() / 100),
+  );
+
+  protected dayLabel(dateIso: string): string {
+    return relativeDayLabel(dateIso);
   }
 
-  get balance() {
-    return this.finance.balance();
+  protected deposit(): void {
+    const value = this.depositAmount();
+    if (value == null) return;
+    if (this.goals.deposit(value)) {
+      this.depositAmount.set(null);
+      this.showFlash(
+        this.goals.isCompleted() ? 'Meta atingida! 🎉' : 'Valor guardado',
+      );
+    }
   }
 
-  get goal() {
-    return this.goalService.goal();
+  protected saveTarget(): void {
+    const value = this.targetDraft();
+    if (value == null || value < 0) return;
+    this.goals.setTarget(value);
+    this.targetDraft.set(null);
+    this.showFlash('Meta atualizada');
   }
 
-  get progress() {
-    return this.goalService.progress();
-  }
-
-  // Geometria do círculo de progresso: circunferência = 2πr (r = 27)
-  // dashoffset = quanto da circunferência fica "vazio" (não preenchido)
-  readonly circleCircumference = 2 * Math.PI * 27;
-
-  get circleDashoffset(): number {
-    return this.circleCircumference * (1 - this.progress / 100);
-  }
-
-  get remaining(): number {
-    return Math.max(0, this.goal.target - this.goal.saved);
-  }
-
-  get isCompleted() {
-    return this.goalService.isCompleted();
-  }
-
-  get todayTasks() {
-    return this.tasks.getTodayTasks(this.today);
-  }
-
-  get nextTasks() {
-    return this.tasks.getNextTasks(this.today);
-  }
-
-  get taskAlert(): string {
-    const count = this.todayTasks.length;
-    if (count === 0) return 'Nenhuma tarefa para hoje';
-    if (count === 1) return 'Você tem 1 tarefa hoje';
-    return `Você tem ${count} tarefas hoje`;
-  }
-
-  goTo(path: string): void {
-    this.router.navigate([path]);
-  }
-
-  setGoalTarget(): void {
-    this.goalService.save(this.goalInput, this.goalService.goal().saved);
-    this.flashMessage('Meta atualizada');
-  }
-
-  addToGoal(): void {
-    if (!this.addAmount || this.addAmount <= 0) return;
-
-    this.goalService.addToSaved(this.addAmount);
-    this.addAmount = null;
-
-    this.flashMessage(
-      this.goalService.isCompleted() ? 'Meta atingida!' : 'Valor adicionado'
-    );
-  }
-
-  private flashMessage(text: string): void {
-    this.savedMessage = text;
-    setTimeout(() => this.savedMessage = '', 2500);
+  private showFlash(text: string): void {
+    this.flash.set(text);
+    setTimeout(() => this.flash.set(''), 2500);
   }
 }

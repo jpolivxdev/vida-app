@@ -1,98 +1,131 @@
 <div class="page">
 
-  <div class="header">
-    <h2>Início</h2>
-    <p>{{ taskAlert }}</p>
-  </div>
+  <header class="page-head">
+    <h1>{{ greeting() }} 👋</h1>
+    <p>{{ taskAlert() }}</p>
+  </header>
 
-  <!-- saldo -->
-  <div class="card balance" (click)="goTo('/finance')">
-    <h3>Saldo atual →</h3>
-    <p>R$ {{ balance }}</p>
-  </div>
+  <a class="card balance-card" routerLink="/financeiro">
+    <span class="balance-label">Saldo atual</span>
+    <span class="balance-value">{{ balance() | brl }}</span>
+    <span class="balance-go">Ver financeiro →</span>
+  </a>
 
-  <!-- meta -->
-  <div class="card goal" [class.completed]="isCompleted">
-
-    <div class="goal-header">
+  <section class="card goal-card" [class.is-complete]="goals.isCompleted()">
+    <div class="goal-top">
       <div>
-        <h3>Meta de economia</h3>
+        <h2 class="goal-title">Meta de economia</h2>
+        <p class="goal-sub">
+          @if (goals.hasGoal()) {
+            {{ goals.remaining() | brl }} restantes
+          } @else {
+            Defina um objetivo para começar
+          }
+        </p>
       </div>
 
-      <div class="goal-circle">
-        <svg width="64" height="64" viewBox="0 0 64 64">
-          <circle cx="32" cy="32" r="27" class="circle-track"></circle>
+      <div class="goal-ring">
+        <svg viewBox="0 0 64 64" width="64" height="64" aria-hidden="true">
+          <circle class="ring-track" cx="32" cy="32" r="27" />
           <circle
-            cx="32" cy="32" r="27"
-            class="circle-progress"
-            [attr.stroke-dasharray]="circleCircumference"
-            [attr.stroke-dashoffset]="circleDashoffset"
-          ></circle>
+            class="ring-value"
+            cx="32"
+            cy="32"
+            r="27"
+            [attr.stroke-dasharray]="circumference"
+            [attr.stroke-dashoffset]="dashOffset()"
+          />
         </svg>
-        <span class="goal-percent">{{ progress }}%</span>
+        <span class="ring-label">{{ goals.progress() }}%</span>
       </div>
     </div>
 
-    <div class="goal-stats">
-      <div class="goal-stat">
-        <p class="label">Guardado</p>
-        <p class="value">R$ {{ goal.saved }}</p>
+    @if (goals.hasGoal()) {
+      <div class="goal-stats">
+        <div class="goal-stat">
+          <span class="goal-stat-label">Guardado</span>
+          <span class="goal-stat-value">{{ goals.goal().saved | brl }}</span>
+        </div>
+        <div class="goal-stat">
+          <span class="goal-stat-label">Meta</span>
+          <span class="goal-stat-value">{{ goals.goal().target | brl }}</span>
+        </div>
       </div>
-      <div class="goal-stat">
-        <p class="label">Faltam</p>
-        <p class="value">R$ {{ remaining }}</p>
-      </div>
-    </div>
+    }
 
-    <p class="msg" *ngIf="savedMessage">{{ savedMessage }}</p>
+    @if (flash()) {
+      <p class="goal-flash">{{ flash() }}</p>
+    }
 
-    <div class="quick-add">
-      <input [(ngModel)]="addAmount" type="number" placeholder="Adicionar valor" />
-      <button (click)="addToGoal()">Adicionar</button>
-    </div>
+    <form class="goal-row" (ngSubmit)="deposit()">
+      <input
+        class="field"
+        type="number"
+        inputmode="decimal"
+        min="0"
+        step="0.01"
+        placeholder="Guardar um valor"
+        [ngModel]="depositAmount()"
+        (ngModelChange)="depositAmount.set($event)"
+        name="deposit"
+      />
+      <button class="btn btn-primary" type="submit" [disabled]="!depositAmount()">
+        Guardar
+      </button>
+    </form>
 
-    <details class="edit-goal">
-      <summary>Editar meta total</summary>
-      <div class="edit-goal-row">
-        <input [(ngModel)]="goalInput" type="number" placeholder="Nova meta" />
-        <button (click)="setGoalTarget()">Salvar</button>
-      </div>
+    <details class="goal-edit">
+      <summary>Ajustar meta total</summary>
+      <form class="goal-row" (ngSubmit)="saveTarget()">
+        <input
+          class="field"
+          type="number"
+          inputmode="decimal"
+          min="0"
+          step="0.01"
+          [placeholder]="goals.goal().target ? (goals.goal().target | brl) : 'Ex.: 2000'"
+          [ngModel]="targetDraft()"
+          (ngModelChange)="targetDraft.set($event)"
+          name="target"
+        />
+        <button class="btn" type="submit" [disabled]="targetDraft() == null">
+          Salvar
+        </button>
+      </form>
     </details>
+  </section>
 
-  </div>
+  <a class="card list-card" routerLink="/tarefas">
+    <div class="list-head">
+      <h2>Hoje</h2>
+      <span class="pill">{{ todayTasks().length }}</span>
+    </div>
+    @for (task of todayTasks(); track task.id) {
+      <div class="list-row">
+        <span class="dot"></span>
+        <span class="list-text">{{ task.text }}</span>
+        @if (task.time) {
+          <span class="list-meta">{{ task.time }}</span>
+        }
+      </div>
+    } @empty {
+      <p class="empty">Nada para hoje. Aproveita! 🌷</p>
+    }
+  </a>
 
-  <!-- tarefas de hoje -->
-  <div class="card tasks" (click)="goTo('/tasks')">
-
-    <h3>Hoje</h3>
-
-    <ul>
-      <li *ngFor="let task of todayTasks">
-        {{ task.text }}
-      </li>
-    </ul>
-
-    <small *ngIf="todayTasks.length === 0">
-      Nada por aqui hoje
-    </small>
-
-  </div>
-
-  <!-- próximas tarefas -->
-  <div class="card tasks" (click)="goTo('/tasks')">
-
-    <h3>Próximas</h3>
-
-    <ul>
-      <li *ngFor="let task of nextTasks">
-        {{ task.text }} - {{ task.date }}
-      </li>
-    </ul>
-
-    <small *ngIf="nextTasks.length === 0">
-      Sem próximas tarefas
-    </small>
-
-  </div>
+  <a class="card list-card" routerLink="/tarefas">
+    <div class="list-head">
+      <h2>Próximas</h2>
+    </div>
+    @for (task of upcomingTasks(); track task.id) {
+      <div class="list-row">
+        <span class="dot"></span>
+        <span class="list-text">{{ task.text }}</span>
+        <span class="list-meta">{{ dayLabel(task.date) }}</span>
+      </div>
+    } @empty {
+      <p class="empty">Sem compromissos futuros</p>
+    }
+  </a>
 
 </div>
