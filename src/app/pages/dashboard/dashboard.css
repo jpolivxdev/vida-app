@@ -227,3 +227,25 @@
   color: var(--ink-faint);
   flex-shrink: 0;
 }
+
+/* ---------- backup ---------- */
+.backup-card h2 {
+  margin: 0 0 4px;
+  font-size: 1rem;
+}
+
+.backup-sub {
+  margin: 0 0 12px;
+  color: var(--ink-soft);
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.backup-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.backup-actions .btn-primary {
+  flex: 1;
+}

@@ -8,6 +8,7 @@ import {
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 
+import { buildBackup, copyBackup, deliverBackup } from '../../core/backup';
 import { BrlPipe } from '../../core/brl.pipe';
 import { relativeDayLabel } from '../../core/date.util';
 import { FinanceService } from '../../services/finance.service';
@@ -38,6 +39,7 @@ export class DashboardPage {
   protected readonly depositAmount = signal<number | null>(null);
   protected readonly targetDraft = signal<number | null>(null);
   protected readonly flash = signal('');
+  protected readonly backupMsg = signal('');
 
   protected readonly greeting = computed(() => {
     const h = new Date().getHours();
@@ -84,6 +86,28 @@ export class DashboardPage {
     this.goals.setTarget(value);
     this.targetDraft.set(null);
     this.showFlash('Meta atualizada');
+  }
+
+  private backup() {
+    return buildBackup(this.finance.transactions(), this.tasks.tasks(), this.goals.goal());
+  }
+
+  protected async exportBackup(): Promise<void> {
+    const b = this.backup();
+    const how = await deliverBackup(b);
+    if (how === 'downloaded') {
+      this.showBackupMsg(`Arquivo baixado: ${b.transactions.length} lançamentos e ${b.tasks.length} tarefas.`);
+    }
+  }
+
+  protected async copyBackup(): Promise<void> {
+    const ok = await copyBackup(this.backup());
+    this.showBackupMsg(ok ? 'Copiado! Cole no FinTrack em "colar dados".' : 'Não deu para copiar. Use "Exportar meus dados".');
+  }
+
+  private showBackupMsg(text: string): void {
+    this.backupMsg.set(text);
+    setTimeout(() => this.backupMsg.set(''), 5000);
   }
 
   private showFlash(text: string): void {

@@ -128,4 +128,19 @@
     }
   </a>
 
+  <section class="card backup-card">
+    <h2>Levar meus dados</h2>
+    <p class="backup-sub">
+      Gera um arquivo com seus gastos, tarefas e meta para importar no FinTrack
+      (Configurações → Importar do Vida App). Nada é apagado daqui.
+    </p>
+    <div class="backup-actions">
+      <button class="btn btn-primary" type="button" (click)="exportBackup()">Exportar meus dados</button>
+      <button class="btn btn-ghost" type="button" (click)="copyBackup()">Copiar</button>
+    </div>
+    @if (backupMsg()) {
+      <p class="goal-flash">{{ backupMsg() }}</p>
+    }
+  </section>
+
 </div>
